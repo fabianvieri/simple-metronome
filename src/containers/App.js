@@ -16,15 +16,32 @@ class App extends Component {
     }
     this.timer = null;
     this.audio = new Audio(beep);
+    this.interval = (60 / parseInt(this.state.range)) * 1000;
+  }
+
+  componentDidUpdate(...prevs) {
+    const [, prevState] = prevs;
+
+    // * prevent 1 beat late
+    if (prevState.isPlay !== this.state.isPlay) {
+      if (this.state.isPlay) {
+        this.playAudio();
+      }
+    }
+
+    // * prevent 1 beat late
+    if (prevState.range !== this.state.range) {
+      if (this.state.isPlay) {
+        this.playAudio();
+      }
+    }
   }
 
   onChangeRange = event => {
-
+    this.interval = (60 / parseInt(event.target.value)) * 1000;
     if (this.state.isPlay) {
       clearInterval(this.timer);
-      const currRange = parseInt(this.state.range);
-      const interval = (60 / currRange) * 1000;
-      this.timer = setInterval(this.playAudio, interval);
+      this.timer = setInterval(this.playAudio, this.interval);
     }
     this.setState({ range: event.target.value });
   }
@@ -32,14 +49,10 @@ class App extends Component {
   onPlay = () => {
     if (this.state.isPlay) {
       clearInterval(this.timer);
-      this.setState({ isPlay: false });
     } else {
-      const currRange = parseInt(this.state.range);
-      const interval = (60 / currRange) * 1000;
-      this.timer = setInterval(this.playAudio, interval);
-      this.setState({ isPlay: true }, this.playAudio);
+      this.timer = setInterval(this.playAudio, this.interval);
     }
-
+    this.setState({ isPlay: !this.state.isPlay });
   }
 
   playAudio = () => {
